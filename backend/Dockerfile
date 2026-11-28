@@ -33,7 +33,7 @@ RUN apk add --no-cache ca-certificates
 COPY --from=builder /app/server ./server
 
 # Run as a non-root user
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN addgroup -S -g 10001 appgroup && adduser -S -u 10001 -G appgroup appuser
 
 USER appuser
 

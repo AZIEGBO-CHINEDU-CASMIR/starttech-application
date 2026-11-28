@@ -389,7 +389,7 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 
 	// Clear the session cookie
 	cookieDomain := utils.GetCookieDomain(c, h.config.CookieDomains)
-	c.SetCookie("token", "", -1, "/", cookieDomain, false, true)
+	c.SetCookie("token", "", -1, "/", cookieDomain, h.config.SecureCookie, true)
 
 	c.JSON(http.StatusOK, gin.H{"message": "Account deleted successfully"})
 }

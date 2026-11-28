@@ -75,6 +75,11 @@ func main() {
 	cacheService := cache.NewCacheService(cfg)
 	tokenService := auth.NewTokenService(cfg.JWTSecretKey, cfg.JWTExpirationHours)
 
+    if err := tokenService.ValidateConfig(); err != nil {
+        slog.Error("invalid JWT configuration", slog.Any("error", err))
+        os.Exit(1)
+    }
+
 	// Preload usernames into cache if enabled
 	preloadUsernamesIntoCache(dbClient, cacheService, cfg)
 

@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: starttech-backend
+  labels:
+    app: starttech-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: starttech-backend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: starttech-backend
+    spec:
+      containers:
+        - name: backend
+          image: ACCOUNT_ID.dkr.ecr.eu-north-1.amazonaws.com/starttech-backend-api:REPLACE_WITH_GIT_SHA
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: PORT
+              value: "8080"
+            - name: ENABLE_CACHE
+              value: "true"
+            - name: REDIS_TLS
+              value: "true"
+            - name: LOG_LEVEL
+              value: "info"
+            - name: LOG_FORMAT
+              value: "json"
+            - name: JWT_EXPIRATION_HOURS
+              value: "72"
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: starttech-backend-secrets
+                  key: MONGO_URI
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: starttech-backend-secrets
+                  key: DB_NAME
+            - name: JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: starttech-backend-secrets
+                  key: JWT_SECRET_KEY
+            - name: REDIS_ADDR
+              valueFrom:
+                secretKeyRef:
+                  name: starttech-backend-secrets
+                  key: REDIS_ADDR
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: starttech-backend-secrets
+                  key: REDIS_PASSWORD
+                  optional: true
+          startupProbe:
+            httpGet:
+              path: /ping
+              port: 8080
+            failureThreshold: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: 8080
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 8080
+            periodSeconds: 10
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          securityContext:
+            runAsUser: 10001
+            runAsGroup: 10001
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL

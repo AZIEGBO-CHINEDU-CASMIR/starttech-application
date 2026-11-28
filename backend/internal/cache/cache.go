@@ -52,7 +52,7 @@ rdb := redis.NewClient(redisOptions)
 
 	// Ping Redis to check the connection
 	if err := rdb.Ping(context.Background()).Err(); err != nil {
-		log.Fatalf("Could not connect to Redis: %v. Caching will be disabled.", err)
+		log.Printf("Could not connect to Redis: %v. Caching will be disabled.", err)
 		// Fallback to no-op cache if connection fails
 		return &NoOpCache{}
 	}
